@@ -2,20 +2,19 @@
 using Unity.Collections;
 using UnityEngine;
 
-public class SMG : MonoBehaviour
+public class Glock : MonoBehaviour
 {
-
-    public float Damage = 75f;
-    public float Range = 90f;
+    public float Damage = 10f;
+    public float Range = 30f;
     public float ImpactForce = 40f;
-    public float FireRate = 45f;
+    public float FireRate = 5f;
     public Camera FpsCam;
     public ParticleSystem MuzzleFlash;
     public GameObject ImpactEffect;
     [SerializeField] private float NextTimeToFire = 0f;
-    public int MaxAmmo = 180;
+    public int MaxAmmo = 75;
     [SerializeField] private int CurrentAmmo;
-    public float ReloadTime = 1.5f;
+    public float ReloadTime = 1f;
     private bool IsReloading = false;
     public Animator Animator;
     void Start()

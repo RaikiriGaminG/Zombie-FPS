@@ -1,4 +1,5 @@
-﻿
+﻿using System.Collections;
+using Unity.Collections;
 using UnityEngine;
 
 public class AR : MonoBehaviour
@@ -12,17 +13,44 @@ public class AR : MonoBehaviour
     public ParticleSystem MuzzleFlash;
     public GameObject ImpactEffect;
     [SerializeField] private float NextTimeToFire = 0f;
+    public int MaxAmmo = 180;
+    [SerializeField] private int CurrentAmmo;
+    public float ReloadTime = 2f;
+    private bool IsReloading = false;
+    public Animator Animator;
+    void Start()
+    {
+        CurrentAmmo = 30;
+    }
+    void OnEnable()
+    {
+        IsReloading = false;
+        Animator.SetBool("Reloading", false);
+    }
     void Update()
     {
+        if (CurrentAmmo <= 0)
+        {
+            StartCoroutine(Reload());
+            return;
+        }
         if (Input.GetButton("Fire1") && Time.time >= NextTimeToFire)
         {
             NextTimeToFire = Time.time + 1f / FireRate;
             Shoot();
         }
+        if (Input.GetKeyDown(KeyCode.R) && CurrentAmmo < MaxAmmo)
+
+        {
+
+            StartCoroutine(Reload());
+
+        }
     }
     void Shoot()
     {
         MuzzleFlash.Play();
+        CurrentAmmo--;
         RaycastHit Hit;
         Physics.Raycast(FpsCam.transform.position, FpsCam.transform.forward, out Hit, Range);
         Target Target = Hit.transform.GetComponent<Target>();
@@ -36,5 +64,22 @@ public class AR : MonoBehaviour
         }
         GameObject Impact = Instantiate(ImpactEffect, Hit.point, Quaternion.LookRotation(Hit.normal));
         Destroy(Impact, 2f);
+    }
+    IEnumerator Reload()
+    {
+        if (IsReloading)
+        {
+            yield break;
+        }
+        IsReloading = true;
+        Debug.Log("Reloading...");
+        Animator.SetBool("Reloading", true);
+        yield return new WaitForSeconds(ReloadTime - .25f);
+        Animator.SetBool("Reloading", false);
+        yield return new WaitForSeconds(.25f);
+        var ammo = Mathf.Min(30, MaxAmmo);
+        MaxAmmo -= ammo;
+        CurrentAmmo = ammo;
+        IsReloading = false;
     }
 }
