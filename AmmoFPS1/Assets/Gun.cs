@@ -2,30 +2,33 @@
 using Unity.Collections;
 using UnityEngine;
 
-public class AR : MonoBehaviour
+public class Gun : MonoBehaviour
 {
 
     public float Damage = 10f;
     public float Range = 100f;
     public float ImpactForce = 40f;
     public float FireRate = 15f;
+    public int AmmoInMagazine = 30;
+    private int MaximumAmmo = 180;
     public Camera FpsCam;
     public ParticleSystem MuzzleFlash;
     public GameObject ImpactEffect;
-    [SerializeField] private float NextTimeToFire = 0f;
     public int MaxAmmo = 180;
-    [SerializeField] private int CurrentAmmo;
+    [SerializeField] private float NextTimeToFire = 0f;
+    public int CurrentAmmo;
     public float ReloadTime = 2f;
     private bool IsReloading = false;
     public Animator Animator;
-    void Start()
-    {
-        CurrentAmmo = 30;
-    }
     void OnEnable()
     {
         IsReloading = false;
         Animator.SetBool("Reloading", false);
+    }
+
+    void Start()
+    {
+        CurrentAmmo = AmmoInMagazine;
     }
     void Update()
     {
@@ -52,18 +55,20 @@ public class AR : MonoBehaviour
         MuzzleFlash.Play();
         CurrentAmmo--;
         RaycastHit Hit;
-        Physics.Raycast(FpsCam.transform.position, FpsCam.transform.forward, out Hit, Range);
-        Target Target = Hit.transform.GetComponent<Target>();
-        if (Target != null)
+        if (Physics.Raycast(FpsCam.transform.position, FpsCam.transform.forward, out Hit, Range))
         {
-            Target.TakeDamage(Damage);
+            Target Target = Hit.transform.GetComponent<Target>();
+            if (Hit.transform.tag == "Enemy")
+            {
+                Target.TakeDamage(Damage);
+            }
+            if (Hit.rigidbody != null)
+            {
+                Hit.rigidbody.AddForce(-Hit.normal * ImpactForce);
+            }
+            GameObject Impact = Instantiate(ImpactEffect, Hit.point, Quaternion.LookRotation(Hit.normal));
+            Destroy(Impact, 2f);
         }
-        if (Hit.rigidbody != null)
-        {
-            Hit.rigidbody.AddForce(-Hit.normal * ImpactForce);
-        }
-        GameObject Impact = Instantiate(ImpactEffect, Hit.point, Quaternion.LookRotation(Hit.normal));
-        Destroy(Impact, 2f);
     }
     IEnumerator Reload()
     {
@@ -77,9 +82,14 @@ public class AR : MonoBehaviour
         yield return new WaitForSeconds(ReloadTime - .25f);
         Animator.SetBool("Reloading", false);
         yield return new WaitForSeconds(.25f);
-        var ammo = Mathf.Min(30, MaxAmmo);
+        var ammo = Mathf.Min(AmmoInMagazine, MaxAmmo);
         MaxAmmo -= ammo;
         CurrentAmmo = ammo;
         IsReloading = false;
+    }
+    public void ReplenishAmmo()
+    {
+        MaxAmmo = MaximumAmmo;
+        CurrentAmmo = AmmoInMagazine;
     }
 }
