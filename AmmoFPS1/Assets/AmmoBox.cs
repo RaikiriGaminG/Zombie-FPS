@@ -20,6 +20,7 @@ public class AmmoBox : MonoBehaviour
                 }
                 i++;
             }
+            Destroy(gameObject);
         }   
     }
 }
