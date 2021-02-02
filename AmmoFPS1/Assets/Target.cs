@@ -3,7 +3,7 @@
 public class Target : MonoBehaviour
 {
     public float health = 200f;
-    public int AddScoreAmount;
+    public int AddScoreAmount = 10;
     public GameObject AmmoBox;
     private int SpawnPos;
     public Animator Anim;
@@ -20,8 +20,8 @@ public class Target : MonoBehaviour
         health -= amount;
         if (health <= 0)
         {
-            Die();
             score.AddScore(AddScoreAmount);
+            Die();
            //AddScoreAmount = GetComponent<Score>().CurrentScore + 10;
         }
     }
